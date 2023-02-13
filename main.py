@@ -11,14 +11,10 @@ dp = Dispatcher(bot=bot, storage=storage)
 def main():
     from handlers import dp
     try:
-        executor.start_polling(dp, skip_updates=True, on_shutdown=shutdown)
+        executor.start_polling(dp, skip_updates=True)
     finally:
         pass
 
-
-async def shutdown():
-    await storage.close()
-    await bot.close()
 
 
 if __name__ == '__main__':
