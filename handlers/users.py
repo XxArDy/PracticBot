@@ -3,11 +3,13 @@ import shutil
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
+from aiogram.types import ReplyKeyboardMarkup
 from yt_dlp import YoutubeDL
 
 from keyboards import start_keyboard
 from main import bot, dp
 from states import UserStates
+from keyboards import continue_keyboard
 
 
 @dp.message_handler(Command('start'))
@@ -47,8 +49,13 @@ async def find_music(message: types.Message, state: FSMContext):
         except:
             pass
         await msg.delete()
-        await message.reply_audio(open(filename, 'rb'))
+        await message.reply_audio(open(filename, 'rb'), reply_markup=continue_keyboard)
         shutil.rmtree(f'musics/{message.from_user.id}', ignore_errors=True)
     except:
         await msg.delete()
         await bot.send_message(message.chat.id, f"{message.text} - таку музику не знайдено!")
+
+@dp.callback_query_handler(text = 'continue')
+async def continue_music(callback: types.CallbackQuery):
+    await bot.send_message(callback.from_user.id,'Ведіть силку або напишіть назву відео з ютуба:')
+    await UserStates.state.set()
