@@ -5,7 +5,8 @@ from .data import Product
 
 
 def create_base():
-    os.remove('sweet.db')
+    if os.path.exists('sweet.db'):
+        os.remove('sweet.db')
     Base.metadata.create_all(engine)
 
 

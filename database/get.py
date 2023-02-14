@@ -17,7 +17,10 @@ def get_product_by_name(product_name):
 
 
 def get_product_by_id(product_id: int):
-    session = Session()
-    product = session.query(Product).filter_by(id=product_id).one()
-    session.close()
-    return product
+    try:
+        session = Session()
+        product = session.query(Product).filter_by(id=product_id).one()
+        session.close()
+        return product
+    except:
+        return None
