@@ -2,10 +2,11 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 
-from keyboards import start_keyboard
+from keyboards import *
 from main import bot, dp
 from misc import DownloadMusic
 from states import UserStates
+from database import *
 
 
 # region commands
@@ -16,7 +17,13 @@ async def start_cmd(message: types.Message):
 
 @dp.message_handler(Command('candy'))
 async def candy_cmd(message: types.Message):
-    pass
+    await message.reply(text='CANDYYYYYYYYYYYYYYYYYYYYYYY🍫🍭🍬🍭🍩', reply_markup=candy_menu_keyboard)
+    await bot.send_photo(message.chat.id, photo=open('pictures/' + get_product_by_id(1).name + '.jpeg', 'rb')
+                         , caption=get_product_by_id(1).name + '\nВага: ' + str(get_product_by_id(1).weight) +
+                                   ' г\nЦіна: ' + str(get_product_by_id(1).price) + ' грн\nОпис: '
+                                   + get_product_by_id(1).description , reply_markup=shop_keyboard)
+
+
 
 # endregion
 
@@ -34,6 +41,7 @@ async def find_music(message: types.Message, state: FSMContext):
     await state.finish()
     down = DownloadMusic(message)
     await down.download()
+
 
 # endregion
 
