@@ -1,6 +1,8 @@
-from .data import Product
-from .base import Session, engine, Base
 import os
+
+from .base import Session, engine, Base
+from .data import Product
+
 
 def create_base():
     os.remove('sweet.db')
