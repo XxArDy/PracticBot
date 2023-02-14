@@ -21,6 +21,8 @@ async def candy_cmd(message: types.Message):
 # endregion
 
 # region text
+
+
 @dp.message_handler(Text(equals=['Найти музику']), state=None)
 async def find_music(message: types.Message):
     await message.answer('Ведіть силку або напишіть назву відео з ютуба:')
