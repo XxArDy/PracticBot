@@ -51,7 +51,10 @@ async def find_music(message: types.Message, state: FSMContext):
 async def show_cart(message: types.Message):
     products = await get_order(message.from_user.id)
     keyboard = await gen_cart(products, message.from_user.id)
-    await bot.send_message(message.from_user.id, text='Ваші товари в корзині:', reply_markup=keyboard)
+    if products:
+        await bot.send_message(message.from_user.id, text='Ваші товари в корзині:', reply_markup=keyboard)
+    else:
+        await bot.send_message(message.from_user.id, text='Корзина пуста', reply_markup=keyboard)
 
 # endregion
 
