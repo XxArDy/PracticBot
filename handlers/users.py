@@ -56,7 +56,7 @@ async def continue_music(callback: types.CallbackQuery):
     await bot.send_message(callback.from_user.id, 'Ведіть силку або напишіть назву відео з ютуба:')
     await UserStates.state.set()
 
-@dp.callback_query_handler(kall.filter(action='next'))
+@dp.callback_query_handler(callbackdata.filter(action='next'))
 async def candy_next(callback: types.CallbackQuery,callback_data: dict):
 
     amount = int(callback_data['amount'])
@@ -68,7 +68,7 @@ async def candy_next(callback: types.CallbackQuery,callback_data: dict):
                                         prod.weight) +
                                         ' г\nЦіна: ' + str(prod.price) + ' грн\nОпис: '
                                         + prod.description), reply_markup=get_keyboard(amount))
-@dp.callback_query_handler(kall.filter(action='back'))
+@dp.callback_query_handler(callbackdata.filter(action='back'))
 async def candy_back(callback: types.CallbackQuery,callback_data: dict):
     amount = int(callback_data['amount'])
     amount -= 1
