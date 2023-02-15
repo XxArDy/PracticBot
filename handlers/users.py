@@ -129,6 +129,7 @@ async def candy_minus(callback: types.CallbackQuery, callback_data: dict):
         await callback.message.answer('Товара нема')
         return 0
     elif count == 1:
+        await callback.message.edit_text("Корзина пуста")
         await remove_one_item(callback.message.chat.id, product_id)
     else:
         await update_cart(callback.message.chat.id, product_id, count - 1)
@@ -144,6 +145,7 @@ async def candy_remove(callback: types.CallbackQuery, callback_data: dict):
     await remove_one_item(callback.from_user.id, product_id)
     data = await get_order(callback.from_user.id)
     keyboard = await gen_cart(data, callback.from_user.id)
+
 
     await callback.message.edit_reply_markup(keyboard)
 
