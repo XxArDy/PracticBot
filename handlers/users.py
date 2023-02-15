@@ -71,9 +71,8 @@ async def candy_next(callback: types.CallbackQuery, callback_data: dict):
                                         caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
                                                 f'\nОпис: {prod.description}'), reply_markup=get_keyboard(amount))
 
-
-@dp.callback_query_handler(callback_data.filter(action='back'))
-async def candy_back(callback: types.CallbackQuery, callback_data: dict):
+@dp.callback_query_handler(callbackdata.filter(action='back'))
+async def candy_back(callback: types.CallbackQuery,callback_data: dict):
     amount = int(callback_data['amount'])
     amount -= 1
     prod = get_product_by_id(amount)
