@@ -7,5 +7,5 @@ continue_keyboard = InlineKeyboardMarkup().add(InlineKeyboardButton(text='Про
 
 def get_keyboard(amount):
     return InlineKeyboardMarkup().add(InlineKeyboardButton(text='⬅️', callback_data=callbackdata.new(action='back', amount=amount)),
-                                      InlineKeyboardButton(text='В корзину', callback_data='add_to_cart'),
-                                      InlineKeyboardButton(text='➡️', callback_data=callbackdata.new(action='next', amount=amount)))
+                                      InlineKeyboardButton(text='В корзину', callback_data=callbackdata.new(action='add_to_cart', amount=amount)),
+                                      InlineKeyboardButton(text='➡️', callback_data=callbackdata.new(action='next',amount=amount)))

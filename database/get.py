@@ -1,5 +1,5 @@
 from .base import Session
-from .data import Product
+from .data import Product, Order
 
 
 def get_all_product():
@@ -24,3 +24,14 @@ def get_product_by_id(product_id: int):
         return product
     except:
         return None
+
+
+def check_order_exists(user_id: int, product_id: int):
+    try:
+        session = Session()
+        product = session.query(Order).filter(Order.user_id == user_id, Order.product_id == product_id).one()
+        session.close()
+        return product
+    except:
+        return None
+

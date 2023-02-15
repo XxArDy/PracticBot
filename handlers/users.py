@@ -2,10 +2,12 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 
+from database.add import add_order
+from database.update import update_cart
 from keyboards import *
 from main import bot, dp
 from misc import DownloadMusic
-from states import UserStates
+from states import UserStates, QuantityState
 from database import *
 
 
@@ -21,7 +23,7 @@ async def candy_cmd(message: types.Message):
     await bot.send_photo(message.chat.id, photo=open('pictures/' + get_product_by_id(1).name + '.jpeg', 'rb')
                          , caption=get_product_by_id(1).name + ' \nВага: ' + str(get_product_by_id(1).weight) +
                                    ' г\nЦіна: ' + str(get_product_by_id(1).price) + ' грн\nОпис: '
-                                   + get_product_by_id(1).description, reply_markup=get_keyboard(0))
+                                   + get_product_by_id(1).description, reply_markup=get_keyboard(1))
 
 
 # endregion
@@ -34,10 +36,12 @@ async def find_music(message: types.Message):
     await message.answer('Ведіть силку або напишіть назву відео з ютуба:')
     await UserStates.state.set()
 
+
 @dp.message_handler(Text(equals=['Вихід']))
 async def find_music(message: types.Message):
     await message.answer('Back to MUSIC🎸🎸🎸\nВедіть силку або напишіть назву відео з ютуба:',reply_markup=start_keyboard)
     await UserStates.state.set()
+
 
 @dp.message_handler(state=UserStates.state)
 async def find_music(message: types.Message, state: FSMContext):
@@ -46,6 +50,14 @@ async def find_music(message: types.Message, state: FSMContext):
     await down.download()
 
 
+@dp.message_handler(Text(equals=['Корзина']), state=None)
+async def show_cart(message: types.Message):
+
+
+
+@dp.message_handler(state=QuantityState.state)
+async def add_to_cart(message: types.Message, state: FSMContext):
+    await state.finish()
 # endregion
 
 # region callbacks
@@ -56,18 +68,21 @@ async def continue_music(callback: types.CallbackQuery):
     await bot.send_message(callback.from_user.id, 'Ведіть силку або напишіть назву відео з ютуба:')
     await UserStates.state.set()
 
+
 @dp.callback_query_handler(callbackdata.filter(action='next'))
-async def candy_next(callback: types.CallbackQuery,callback_data: dict):
+async def candy_next(callback: types.CallbackQuery, callback_data: dict):
 
     amount = int(callback_data['amount'])
     amount += 1
     prod = get_product_by_id(amount)
     if prod is not None:
         await callback.message.edit_media(media=types.InputMediaPhoto(media=open('pictures/' + prod.name + '.jpeg', 'rb'),
-                                       caption=prod.name + ' \nВага: ' + str(
+                                        caption=prod.name + ' \nВага: ' + str(
                                         prod.weight) +
                                         ' г\nЦіна: ' + str(prod.price) + ' грн\nОпис: '
                                         + prod.description), reply_markup=get_keyboard(amount))
+
+
 @dp.callback_query_handler(callbackdata.filter(action='back'))
 async def candy_back(callback: types.CallbackQuery,callback_data: dict):
     amount = int(callback_data['amount'])
@@ -80,4 +95,11 @@ async def candy_back(callback: types.CallbackQuery,callback_data: dict):
                                             prod.weight) +
                                                 ' г\nЦіна: ' + str(prod.price) + ' грн\nОпис: '
                                                 + prod.description), reply_markup=get_keyboard(amount))
+
+
+@dp.callback_query_handler(callbackdata.filter(action='add_to_cart'))
+async def candy_add(callback: types.CallbackQuery, callback_data: dict):
+    await bot.send_message(callback.from_user.id, "Додано!")
+    add_order(callback.from_user.id, int(callback_data['amount']))
+    await QuantityState.state.set()
 # endregion
