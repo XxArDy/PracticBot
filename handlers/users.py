@@ -19,7 +19,7 @@ async def start_cmd(message: types.Message):
 async def candy_cmd(message: types.Message):
     await message.reply(text='CANDYYYYYYYYYYYYYYYYYYYYYYY🍫🍭🍬🍭🍩', reply_markup=candy_menu_keyboard)
     prod = get_product_by_id(1)
-    await bot.send_photo(message.chat.id, photo=open('pictures/' + get_product_by_id(1).name + '.jpeg', 'rb'),
+    await bot.send_photo(message.chat.id, photo=open(f'pictures/{prod.name}.jpeg', 'rb'),
                          caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
                                  f'\nОпис: {prod.description}', reply_markup=get_keyboard(1))
 
