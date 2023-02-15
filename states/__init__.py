@@ -1,3 +1,3 @@
-from .user import UserStates, QuantityState
+from .user import UserStates
 
 

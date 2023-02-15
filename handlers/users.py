@@ -2,13 +2,11 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 
-from database.add import add_order
-from database.update import update_cart
+from database import *
 from keyboards import *
 from main import bot, dp
 from misc import DownloadMusic
-from states import UserStates, QuantityState
-from database import *
+from states import UserStates
 
 
 # region commands
@@ -20,11 +18,7 @@ async def start_cmd(message: types.Message):
 @dp.message_handler(Command('candy'))
 async def candy_cmd(message: types.Message):
     await message.reply(text='CANDYYYYYYYYYYYYYYYYYYYYYYY🍫🍭🍬🍭🍩', reply_markup=candy_menu_keyboard)
-    await bot.send_photo(message.chat.id, photo=open('pictures/' + get_product_by_id(1).name + '.jpeg', 'rb')
-                         , caption=get_product_by_id(1).name + ' \nВага: ' + str(get_product_by_id(1).weight) +
-                                   ' г\nЦіна: ' + str(get_product_by_id(1).price) + ' грн\nОпис: '
-                                   + get_product_by_id(1).description, reply_markup=get_keyboard(1))
-    prod = get_product_by_id(1)
+    prod = await get_product_by_id(1)
     await bot.send_photo(message.chat.id, photo=open(f'pictures/{prod.name}.jpeg', 'rb'),
                          caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
                                  f'\nОпис: {prod.description}', reply_markup=get_keyboard(1))
@@ -43,9 +37,7 @@ async def find_music(message: types.Message):
 
 @dp.message_handler(Text(equals=['Вихід']))
 async def find_music(message: types.Message):
-    await message.answer('Back to MUSIC🎸🎸🎸\nВедіть силку або напишіть назву відео з ютуба:',
-                         reply_markup=start_keyboard)
-    await UserStates.state.set()
+    await bot.send_message(message.from_user.id, text='Повернули до музики', reply_markup=start_keyboard)
 
 
 @dp.message_handler(state=UserStates.state)
@@ -55,14 +47,12 @@ async def find_music(message: types.Message, state: FSMContext):
     await down.download()
 
 
-@dp.message_handler(Text(equals=['Корзина']), state=None)
+@dp.message_handler(Text(equals=['Корзина']))
 async def show_cart(message: types.Message):
-    pass
+    products = await get_order(message.from_user.id)
+    keyboard = await gen_cart(products, message.from_user.id)
+    await bot.send_message(message.from_user.id, text='Ваші товари в корзині:', reply_markup=keyboard)
 
-
-@dp.message_handler(state=QuantityState.state)
-async def add_to_cart(message: types.Message, state: FSMContext):
-    await state.finish()
 # endregion
 
 # region callbacks
@@ -78,36 +68,111 @@ async def continue_music(callback: types.CallbackQuery):
 async def candy_next(callback: types.CallbackQuery, callback_data: dict):
     amount = int(callback_data['amount'])
     amount += 1
-    prod = get_product_by_id(amount)
+    prod = await get_product_by_id(amount)
     if prod is not None:
-        await callback.message.edit_media(media=types.InputMediaPhoto(media=open('pictures/' + prod.name + '.jpeg', 'rb'),
-                                        caption=prod.name + ' \nВага: ' + str(
-                                        prod.weight) +
-                                        ' г\nЦіна: ' + str(prod.price) + ' грн\nОпис: '
-                                        + prod.description), reply_markup=get_keyboard(amount))
+        await callback.message.edit_media(
+            media=types.InputMediaPhoto(media=open(f'pictures/{prod.name}.jpeg', 'rb'),
+                                        caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
+                                                f'\nОпис: {prod.description}'),
+            reply_markup=get_keyboard(amount))
 
+
+@dp.callback_query_handler(callback_data.filter(action='back'))
+async def candy_back(callback: types.CallbackQuery, callback_data: dict):
+    amount = int(callback_data['amount'])
+    amount -= 1
+    prod = await get_product_by_id(amount)
+    if prod is not None:
         await callback.message.edit_media(
             media=types.InputMediaPhoto(media=open(f'pictures/{prod.name}.jpeg', 'rb'),
                                         caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
                                                 f'\nОпис: {prod.description}'), reply_markup=get_keyboard(amount))
 
-@dp.callback_query_handler(callback_data.filter(action='back'))
-async def candy_back(callback: types.CallbackQuery,callback_data: dict):
-    amount = int(callback_data['amount'])
-    amount -= 1
-    prod = get_product_by_id(amount)
-    if prod is not None:
-        await callback.message.edit_media(
-            media=types.InputMediaPhoto(media=open('pictures/' + prod.name + '.jpeg', 'rb'),
-                                        caption=prod.name + ' \nВага: ' + str(
-                                            prod.weight) +
-                                                ' г\nЦіна: ' + str(prod.price) + ' грн\nОпис: '
-                                                + prod.description), reply_markup=get_keyboard(amount))
-
 
 @dp.callback_query_handler(callback_data.filter(action='add_to_cart'))
 async def candy_add(callback: types.CallbackQuery, callback_data: dict):
-    await bot.send_message(callback.from_user.id, "Додано!")
-    add_order(callback.from_user.id, int(callback_data['amount']))
-    await QuantityState.state.set()
+    await add_order(callback.from_user.id, int(callback_data['amount']))
+    amount = int(callback_data['amount'])
+    await callback.message.delete_reply_markup()
+    await callback.message.edit_reply_markup(get_keyboard(amount))
+
+
+@dp.callback_query_handler(text='back_menu')
+async def candy_back(callback: types.CallbackQuery):
+    prod = await get_product_by_id(1)
+    await bot.send_photo(callback.from_user.id, photo=open(f'pictures/{prod.name}.jpeg', 'rb'),
+                         caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
+                                 f'\nОпис: {prod.description}', reply_markup=get_keyboard(1))
+
+
+@dp.callback_query_handler(callback_data.filter(action='plus'))
+async def candy_plus(callback: types.CallbackQuery, callback_data: dict):
+    product_id = callback_data.get('amount')
+    count_in_cart = await get_quantity(callback.message.chat.id, product_id)
+    count = 0 if not count_in_cart else sum(j.quantity for j in count_in_cart)
+    await update_cart(callback.message.chat.id, product_id, count + 1)
+    data = await get_order(callback.from_user.id)
+    keyboard = await gen_cart(data, callback.from_user.id)
+
+    await callback.message.edit_reply_markup(keyboard)
+
+
+@dp.callback_query_handler(callback_data.filter(action='minus'))
+async def candy_minus(callback: types.CallbackQuery, callback_data: dict):
+    product_id = callback_data.get('amount')
+    count_in_cart = await get_quantity(callback.message.chat.id, product_id)
+    count = 0 if not count_in_cart else sum(j.quantity for j in count_in_cart)
+    if count == 0:
+        await callback.message.answer('Товара нема')
+        return 0
+    elif count == 1:
+        await remove_one_item(callback.message.chat.id, product_id)
+    else:
+        await update_cart(callback.message.chat.id, product_id, count - 1)
+    data = await get_order(callback.from_user.id)
+    keyboard = await gen_cart(data, callback.from_user.id)
+
+    await callback.message.edit_reply_markup(keyboard)
+
+
+@dp.callback_query_handler(callback_data.filter(action='remove'))
+async def candy_remove(callback: types.CallbackQuery, callback_data: dict):
+    product_id = callback_data.get('amount')
+    await remove_one_item(callback.from_user.id, product_id)
+    data = await get_order(callback.from_user.id)
+    keyboard = await gen_cart(data, callback.from_user.id)
+
+    await callback.message.edit_reply_markup(keyboard)
+
+
+@dp.callback_query_handler(text='pay')
+async def candy_pay(callback: types.CallbackQuery):
+    suma = 0
+    products = await get_order(callback.from_user.id)
+    for i in products:
+        prod = await get_product_by_id(i.product_id)
+        suma += i.quantity * prod.price
+
+    await bot.send_message(callback.from_user.id, text=f'Ваша сума до оплати:\n{suma}грн', reply_markup=pay_keyboard)
+
+
+@dp.callback_query_handler(text='accept_pay')
+async def candy_accept_pay(callback: types.CallbackQuery):
+    await delete_order(callback.from_user.id)
+    await bot.send_message(callback.from_user.id, text='Ви успішно оплатили покупку!', reply_markup=continue_buy)
+
+
+@dp.callback_query_handler(text='continue_buy')
+async def candy_continue_buy(callback: types.CallbackQuery):
+    prod = await get_product_by_id(1)
+    await bot.send_photo(callback.from_user.id, photo=open(f'pictures/{prod.name}.jpeg', 'rb'),
+                         caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
+                                 f'\nОпис: {prod.description}', reply_markup=get_keyboard(1))
+
+
+@dp.callback_query_handler(text='exit')
+async def candy_exit(callback: types.CallbackQuery):
+    await bot.send_message(callback.from_user.id, text='Повернули до музики', reply_markup=start_keyboard)
+
 # endregion
+
