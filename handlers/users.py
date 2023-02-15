@@ -57,7 +57,7 @@ async def find_music(message: types.Message, state: FSMContext):
 
 @dp.message_handler(Text(equals=['Корзина']), state=None)
 async def show_cart(message: types.Message):
-
+    pass
 
 
 @dp.message_handler(state=QuantityState.state)
@@ -72,10 +72,6 @@ async def add_to_cart(message: types.Message, state: FSMContext):
 async def continue_music(callback: types.CallbackQuery):
     await bot.send_message(callback.from_user.id, 'Ведіть силку або напишіть назву відео з ютуба:')
     await UserStates.state.set()
-
-
-@dp.callback_query_handler(callbackdata.filter(action='next'))
-async def candy_next(callback: types.CallbackQuery, callback_data: dict):
 
 
 @dp.callback_query_handler(callback_data.filter(action='next'))
@@ -95,7 +91,7 @@ async def candy_next(callback: types.CallbackQuery, callback_data: dict):
                                         caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
                                                 f'\nОпис: {prod.description}'), reply_markup=get_keyboard(amount))
 
-@dp.callback_query_handler(callbackdata.filter(action='back'))
+@dp.callback_query_handler(callback_data.filter(action='back'))
 async def candy_back(callback: types.CallbackQuery,callback_data: dict):
     amount = int(callback_data['amount'])
     amount -= 1
@@ -109,12 +105,9 @@ async def candy_back(callback: types.CallbackQuery,callback_data: dict):
                                                 + prod.description), reply_markup=get_keyboard(amount))
 
 
-@dp.callback_query_handler(callbackdata.filter(action='add_to_cart'))
+@dp.callback_query_handler(callback_data.filter(action='add_to_cart'))
 async def candy_add(callback: types.CallbackQuery, callback_data: dict):
     await bot.send_message(callback.from_user.id, "Додано!")
     add_order(callback.from_user.id, int(callback_data['amount']))
     await QuantityState.state.set()
-            media=types.InputMediaPhoto(media=open(f'pictures/{prod.name}.jpeg', 'rb'),
-                                        caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
-                                                f'\nОпис: {prod.description}'), reply_markup=get_keyboard(amount))
 # endregion
