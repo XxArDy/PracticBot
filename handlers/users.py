@@ -131,6 +131,7 @@ async def candy_minus(callback: types.CallbackQuery, callback_data: dict):
     elif count == 1:
         await callback.message.edit_text("Корзина пуста")
         await remove_one_item(callback.message.chat.id, product_id)
+        await callback.message.edit_text(text='Корзина пуста')
     else:
         await update_cart(callback.message.chat.id, product_id, count - 1)
     data = await get_order(callback.from_user.id)
@@ -143,6 +144,10 @@ async def candy_minus(callback: types.CallbackQuery, callback_data: dict):
 async def candy_remove(callback: types.CallbackQuery, callback_data: dict):
     product_id = callback_data.get('amount')
     await remove_one_item(callback.from_user.id, product_id)
+    count_in_cart = await get_quantity(callback.message.chat.id, product_id)
+    count = 0 if not count_in_cart else sum(j.quantity for j in count_in_cart)
+    if count == 0:
+        await callback.message.edit_text(text='Корзина пуста')
     data = await get_order(callback.from_user.id)
     keyboard = await gen_cart(data, callback.from_user.id)
 
