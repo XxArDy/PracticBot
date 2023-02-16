@@ -47,7 +47,7 @@ class CustomUserHandlers:
                                     reply_markup=start_keyboard)
 
     async def candy_cmd(self, message: types.Message):
-        await message.reply(text='CANDYYYYYYYYYYYYYYYYYYYYYYY🍫🍭🍬🍭🍩', reply_markup=candy_menu_keyboard)
+        await message.reply(text='🎤🎧🎶🎸🎤🎧🎶🎸Music🎤🎧🎶🎸🎤🎧🎶🎸', reply_markup=candy_menu_keyboard)
         prod = await self.database.get_product_by_id(1)
         await self.bot.send_photo(message.chat.id, photo=open(f'pictures/{prod.name}.jpeg', 'rb'),
                                   caption=f'{prod.name}\nВага: {prod.weight} г\nЦіна: {prod.price} грн'
