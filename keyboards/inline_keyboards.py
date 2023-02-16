@@ -38,6 +38,7 @@ async def gen_cart(data, user_id):
                      InlineKeyboardButton(text='🔽',
                                           callback_data=callback_data.new(action='minus', amount=prod_id)),
                      InlineKeyboardButton(text='❌', callback_data=callback_data.new(action='remove', amount=prod_id)))
-    keyboard.add(InlineKeyboardButton(text='Оплатити', callback_data='pay'))
+    if data:
+        keyboard.add(InlineKeyboardButton(text='Оплатити', callback_data='pay'))
     keyboard.add(InlineKeyboardButton(text='Назад', callback_data='back_menu'))
     return keyboard
