@@ -51,7 +51,10 @@ async def find_music(message: types.Message, state: FSMContext):
 async def show_cart(message: types.Message):
     products = await get_order(message.from_user.id)
     keyboard = await gen_cart(products, message.from_user.id)
-    await bot.send_message(message.from_user.id, text='Ваші товари в корзині:', reply_markup=keyboard)
+    if products:
+        await bot.send_message(message.from_user.id, text='Ваші товари в корзині:', reply_markup=keyboard)
+    else:
+        await bot.send_message(message.from_user.id, text='Корзина пуста', reply_markup=keyboard)
 
 # endregion
 
@@ -126,6 +129,7 @@ async def candy_minus(callback: types.CallbackQuery, callback_data: dict):
         await callback.message.answer('Товара нема')
         return 0
     elif count == 1:
+        await callback.message.edit_text("Корзина пуста")
         await remove_one_item(callback.message.chat.id, product_id)
         await callback.message.edit_text(text='Корзина пуста')
     else:
@@ -146,6 +150,7 @@ async def candy_remove(callback: types.CallbackQuery, callback_data: dict):
         await callback.message.edit_text(text='Корзина пуста')
     data = await get_order(callback.from_user.id)
     keyboard = await gen_cart(data, callback.from_user.id)
+
 
     await callback.message.edit_reply_markup(keyboard)
 
