@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
-from database import get
+
+from database import Database
 
 callback_data = CallbackData('vote', 'action', 'amount')
 
@@ -23,11 +24,12 @@ def get_keyboard(amount):
 
 
 async def gen_cart(data, user_id):
+    database = Database()
     keyboard = InlineKeyboardMarkup(resize_keyboard=True)
     for i in data:
         prod_id = i.product_id
-        prod = await get.get_product_by_id(prod_id)
-        count = await get.get_quantity(user_id, prod_id)
+        prod = await database.get_product_by_id(prod_id)
+        count = await database.get_quantity(user_id, prod_id)
         count = 0 if not count else sum(j.quantity for j in count)
         keyboard.add(InlineKeyboardButton(text=f'{prod.name}: {prod.price} грн - {count}шт',
                                           callback_data=callback_data.new(action='plus', amount=prod_id)))
