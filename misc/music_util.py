@@ -1,16 +1,16 @@
 import shutil
 from yt_dlp import YoutubeDL
-from aiogram import types
-from main import bot
+from aiogram import types, Bot
 from keyboards import continue_keyboard
 
 
 class DownloadMusic:
-    def __init__(self, message: types.Message):
+    def __init__(self, bot: Bot, message: types.Message):
         self.msg = message
+        self.bot = bot
 
     async def download(self):
-        message = await bot.send_message(self.msg.chat.id, "Загрузка..")
+        message = await self.bot.send_message(self.msg.chat.id, "Загрузка..")
         try:
             if 'https://' in self.msg.text:
                 info = YoutubeDL().extract_info(self.msg.text, download=False)
@@ -40,4 +40,4 @@ class DownloadMusic:
         except Exception as e:
             print(e)
             await message.delete()
-            await bot.send_message(self.msg.chat.id, f"{self.msg.text} - таку музику не знайдено!")
+            await self.bot.send_message(self.msg.chat.id, f"{self.msg.text} - таку музику не знайдено!")
