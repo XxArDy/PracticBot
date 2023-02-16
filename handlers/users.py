@@ -19,7 +19,7 @@ class CustomUserHandlers:
     def register_event(self):
         """Реєструєм команди"""
         self.dp.register_message_handler(self.start_cmd, commands=['start'])
-        self.dp.register_message_handler(self.candy_cmd, commands=['candy'])
+        self.dp.register_message_handler(self.candy_cmd, commands=['shop'])
 
         """Реєструєм івенти на текст"""
         self.dp.register_message_handler(self.find_music, Text(equals=['Найти музику']), state=None)
