@@ -23,7 +23,7 @@ def get_keyboard(amount):
 
 
 async def gen_cart(data, user_id):
-    keyboard = InlineKeyboardMarkup()
+    keyboard = InlineKeyboardMarkup(resize_keyboard=True)
     for i in data:
         prod_id = i.product_id
         prod = await get.get_product_by_id(prod_id)
